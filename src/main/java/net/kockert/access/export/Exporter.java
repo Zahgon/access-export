@@ -1,13 +1,11 @@
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
-
 package net.kockert.access.export;
 
 import com.healthmarketscience.jackcess.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import java.io.IOException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -37,19 +35,11 @@ public class Exporter {
     }
 
     public void export(final Connection jdbcConnection) throws SQLException, IOException {
-        boolean autoCommit = jdbcConnection.getAutoCommit();
-        jdbcConnection.setAutoCommit(false);
-
-        createTables(jdbcConnection);
-        populateTables(jdbcConnection);
-
-        jdbcConnection.commit();
-        jdbcConnection.setAutoCommit(autoCommit);
+        throw new UnsupportedOperationException("STUB: not implemented");
     }
 
     private void createTables(final Connection jdbcConnection) throws SQLException, IOException {
         Set<String> tableNames = filterTableNames();
-
         for (String tableName : tableNames) {
             Table table = db.getTable(tableName);
             createTable(table, jdbcConnection);
@@ -59,7 +49,6 @@ public class Exporter {
 
     private void createIndexes(final Table table, final Connection jdbcConnection) throws SQLException {
         Collection<Index> indexes = filterDuplicateIndexes(table);
-
         for (Index index : indexes) {
             createIndex(index, jdbcConnection);
         }
@@ -67,19 +56,13 @@ public class Exporter {
 
     private Collection<Index> filterDuplicateIndexes(final Table table) {
         Map<List<Column>, Index> columnsToIndexMap = new HashMap<>();
-
         for (Index index : table.getIndexes()) {
-            List<Column> columns = index.getColumns()
-                    .stream()
-                    .map(Index.Column::getColumn)
-                    .collect(Collectors.toList());
-
+            List<Column> columns = index.getColumns().stream().map(Index.Column::getColumn).collect(Collectors.toList());
             // unique indexes should always take precedence
             if (!columnsToIndexMap.containsKey(columns) || index.isUnique()) {
                 columnsToIndexMap.put(columns, index);
             }
         }
-
         return columnsToIndexMap.values();
     }
 
@@ -109,18 +92,15 @@ public class Exporter {
 
     private void populateTables(final Connection jdbcConnection) throws SQLException, IOException {
         Set<String> tableNames = filterTableNames();
-
         for (String tableName : tableNames) {
             Table table = db.getTable(tableName);
             populateTable(table, jdbcConnection);
         }
-
     }
 
     private void populateTable(final Table table, final Connection jdbcConnection) throws SQLException {
         String sql = sqlGenerator.insertIntoTable(table);
         LOGGER.debug("Prepared SQL: {}", sql);
-
         try (PreparedStatement preparedStatement = jdbcConnection.prepareStatement(sql)) {
             List<? extends Column> columns = table.getColumns();
             for (Row row : table) {
@@ -137,5 +117,4 @@ public class Exporter {
             preparedStatement.setObject(i + 1, row.get(column.getName()));
         }
     }
-
 }

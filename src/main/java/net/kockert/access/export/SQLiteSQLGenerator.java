@@ -1,14 +1,12 @@
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
-
 package net.kockert.access.export;
 
 import com.healthmarketscience.jackcess.Column;
 import com.healthmarketscience.jackcess.Index;
 import com.healthmarketscience.jackcess.Relationship;
 import com.healthmarketscience.jackcess.Table;
-
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
@@ -17,49 +15,7 @@ public class SQLiteSQLGenerator implements SQLGenerator {
 
     @Override
     public String createTable(Table table, List<Relationship> relationships) {
-        final StringBuilder stmtBuilder = new StringBuilder();
-
-        List<? extends Index.Column> primaryKeyColumns = getPrimaryKeyColumns(table);
-
-        String tableName = table.getName();
-        stmtBuilder.append("CREATE TABLE ");
-        stmtBuilder.append(createStringConstant(tableName));
-        stmtBuilder.append(" (");
-
-        List<? extends Column> columns = table.getColumns();
-        for (Iterator<? extends Column> iterator = columns.iterator(); iterator.hasNext(); ) {
-            Column column = iterator.next();
-
-            stmtBuilder.append(createStringConstant(column.getName()));
-            stmtBuilder.append(" ");
-            stmtBuilder.append(mapDatatype(column));
-
-            if (isPrimaryKeyColumn(primaryKeyColumns, column)) {
-                stmtBuilder.append(" PRIMARY KEY");
-            }
-
-            if (iterator.hasNext()) {
-                stmtBuilder.append(", ");
-            }
-        }
-
-        if (hasMultiplePrimaryKeyColumns(primaryKeyColumns)) {
-            stmtBuilder.append(", ");
-            stmtBuilder.append(createPrimaryKeyTableConstraint(primaryKeyColumns));
-        }
-
-        for (Relationship relationship : relationships) {
-            if (!relationship.getToTable().equals(table)) {
-                continue;
-            }
-
-            stmtBuilder.append(", ");
-            stmtBuilder.append(createForeignKeyTableConstraint(relationship));
-        }
-
-        stmtBuilder.append(")");
-
-        return stmtBuilder.toString();
+        throw new UnsupportedOperationException("STUB: not implemented");
     }
 
     /**
@@ -70,12 +26,11 @@ public class SQLiteSQLGenerator implements SQLGenerator {
      * @see <a href="https://www.sqlite.org/datatype3.html">Datatypes in SQLite</a>
      */
     private String mapDatatype(Column column) {
-        switch (column.getType()) {
+        switch(column.getType()) {
             /* Blob */
             case BINARY:
             case OLE:
                 return "BLOB";
-
             /* Integers */
             case BOOLEAN:
             case BYTE:
@@ -86,19 +41,16 @@ public class SQLiteSQLGenerator implements SQLGenerator {
              * default behaviour of the driver is to store the date as Unix Time */
             case SHORT_DATE_TIME:
                 return "INTEGER";
-
             /* Floating point */
             case DOUBLE:
             case FLOAT:
             case NUMERIC:
                 return "REAL";
-
             /* Strings */
             case TEXT:
             case GUID:
             case MEMO:
                 return "TEXT";
-
             default:
                 throw new IllegalArgumentException("Unsupported data type: " + column.getType());
         }
@@ -137,7 +89,6 @@ public class SQLiteSQLGenerator implements SQLGenerator {
      */
     private String createPrimaryKeyTableConstraint(List<? extends Index.Column> primaryKeyColumns) {
         final StringBuilder stmtBuilder = new StringBuilder();
-
         stmtBuilder.append("PRIMARY KEY(");
         for (Iterator<? extends Index.Column> iterator = primaryKeyColumns.iterator(); iterator.hasNext(); ) {
             stmtBuilder.append(createStringConstant(iterator.next().getName()));
@@ -146,7 +97,6 @@ public class SQLiteSQLGenerator implements SQLGenerator {
             }
         }
         stmtBuilder.append(")");
-
         return stmtBuilder.toString();
     }
 
@@ -163,7 +113,6 @@ public class SQLiteSQLGenerator implements SQLGenerator {
      */
     private String createForeignKeyTableConstraint(Relationship relationship) {
         final StringBuilder stmtBuilder = new StringBuilder();
-
         stmtBuilder.append("FOREIGN KEY(");
         for (Iterator<Column> iterator = relationship.getToColumns().iterator(); iterator.hasNext(); ) {
             Column foreignKeyColumn = iterator.next();
@@ -183,7 +132,6 @@ public class SQLiteSQLGenerator implements SQLGenerator {
             }
         }
         stmtBuilder.append(")");
-
         return stmtBuilder.toString();
     }
 
@@ -200,7 +148,6 @@ public class SQLiteSQLGenerator implements SQLGenerator {
                 return index.getColumns();
             }
         }
-
         return Collections.emptyList();
     }
 
@@ -217,65 +164,11 @@ public class SQLiteSQLGenerator implements SQLGenerator {
 
     @Override
     public String createIndex(Index index) {
-        List<? extends Index.Column> columns = index.getColumns();
-
-        final StringBuilder stmtBuilder = new StringBuilder();
-
-        final String tableName = index.getTable().getName();
-        final String indexName = tableName + "_" + index.getName();
-
-        stmtBuilder.append("CREATE ");
-        if (index.isUnique()) {
-            stmtBuilder.append("UNIQUE ");
-        }
-        stmtBuilder.append("INDEX ");
-        stmtBuilder.append(createStringConstant(indexName));
-        stmtBuilder.append(" ON ");
-        stmtBuilder.append(createStringConstant(tableName));
-        stmtBuilder.append("(");
-
-        for (Iterator<? extends Index.Column> iterator = columns.iterator(); iterator.hasNext(); ) {
-            Index.Column column = iterator.next();
-            stmtBuilder.append(createStringConstant(column.getName()));
-            if (iterator.hasNext())
-                stmtBuilder.append(", ");
-        }
-        stmtBuilder.append(")");
-
-        return stmtBuilder.toString();
+        throw new UnsupportedOperationException("STUB: not implemented");
     }
 
     @Override
     public String insertIntoTable(Table table) {
-        final StringBuilder stmtBuilder = new StringBuilder();
-
-        stmtBuilder.append("INSERT INTO ");
-        stmtBuilder.append(createStringConstant(table.getName()));
-        stmtBuilder.append(" (");
-
-        final List<? extends Column> columns = table.getColumns();
-
-        for (Iterator<? extends Column> iterator = columns.iterator(); iterator.hasNext(); ) {
-            Column column = iterator.next();
-            stmtBuilder.append(createStringConstant(column.getName()));
-            if (iterator.hasNext()) {
-                stmtBuilder.append(", ");
-            }
-        }
-
-        stmtBuilder.append(") VALUES (");
-
-        for (Iterator<? extends Column> iterator = columns.iterator(); iterator.hasNext(); ) {
-            iterator.next();
-            stmtBuilder.append("?");
-            if (iterator.hasNext()) {
-                stmtBuilder.append(", ");
-            }
-        }
-
-        stmtBuilder.append(")");
-
-        return stmtBuilder.toString();
+        throw new UnsupportedOperationException("STUB: not implemented");
     }
-
 }

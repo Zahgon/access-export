@@ -1,13 +1,11 @@
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
-
 package net.kockert.access.export;
 
 import com.beust.jcommander.JCommander;
 import com.healthmarketscience.jackcess.Database;
 import com.healthmarketscience.jackcess.DatabaseBuilder;
-
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -20,21 +18,25 @@ import java.sql.SQLException;
 public class Main {
 
     private static final int EXIT_STATUS_INVALID_USAGE = 1;
+
     private static final int EXIT_STATUS_SOURCE_DOES_NOT_EXIST = 2;
+
     private static final int EXIT_STATUS_TARGET_DOES_ALREADY_EXIST = 3;
+
     private static final int EXIT_STATUS_ERROR_OPENING_SOURCE = 4;
+
     private static final int EXIT_STATUS_ERROR_OPENING_TARGET = 5;
+
     private static final int EXIT_STATUS_ERROR_DURING_EXPORT = 6;
+
     private static final int EXIT_STATUS_TARGET_DIR_DOES_NOT_EXIST = 7;
+
     private static final int EXIT_STATUS_TARGET_DIR_IS_NO_DIRECTORY = 8;
+
     private static final int EXIT_STATUS_INVALID_EXPORT_FORMAT = 9;
 
     public static void main(String[] args) {
-        Main main = new Main(systemExitException -> {
-            System.err.println(systemExitException.getMessage());
-            System.exit(systemExitException.getStatusCode());
-        });
-        main.run(args);
+        throw new UnsupportedOperationException("STUB: not implemented");
     }
 
     private SystemExitHandler systemExitHandler;
@@ -44,32 +46,7 @@ public class Main {
     }
 
     public void run(String... args) {
-        CommandLineParameters clp = new CommandLineParameters();
-        JCommander jCommander = new JCommander(clp);
-        jCommander.parse(args);
-
-        if (clp.helpRequested() || clp.insufficientParameters()) {
-            StringBuilder usage = new StringBuilder();
-            jCommander.usage(usage);
-            systemExitHandler.handle(new SystemExitException(usage.toString(), EXIT_STATUS_INVALID_USAGE));
-        }
-
-        try {
-            switch (clp.getFormat()) {
-                case SQLITE:
-                    jdbcExport(clp);
-                    break;
-                case CSV:
-                    csvExport(clp);
-                    break;
-            }
-        } catch (IllegalArgumentException e) {
-            systemExitHandler.handle(new SystemExitException("Invalid parameter value", e, EXIT_STATUS_INVALID_EXPORT_FORMAT));
-        } catch (SystemExitException e) {
-            systemExitHandler.handle(e);
-        } catch (IOException | SQLException e) {
-            systemExitHandler.handle(new SystemExitException("Error during export", e, EXIT_STATUS_ERROR_DURING_EXPORT));
-        }
+        throw new UnsupportedOperationException("STUB: not implemented");
     }
 
     private void csvExport(CommandLineParameters clp) throws SystemExitException, IOException {
@@ -89,7 +66,7 @@ public class Main {
         Path sourceFile = getSourceFile(clp);
         Path targetFile = getTargetFile(clp);
         try (Database database = openSourceDatabase(sourceFile.toFile());
-             Connection jdbcConnection = openTargetDatabase(targetFile)) {
+            Connection jdbcConnection = openTargetDatabase(targetFile)) {
             Exporter exporter = new Exporter(database, clp.getTablesToExport());
             exporter.export(jdbcConnection);
         }
@@ -148,7 +125,6 @@ public class Main {
     interface SystemExitHandler {
 
         void handle(SystemExitException systemExitException);
-
     }
 
     /**
@@ -169,8 +145,7 @@ public class Main {
         }
 
         public int getStatusCode() {
-            return statusCode;
+            throw new UnsupportedOperationException("STUB: not implemented");
         }
     }
-
 }
